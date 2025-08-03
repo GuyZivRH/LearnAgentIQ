@@ -1,0 +1,23 @@
+general:
+  use_uvloop: true
+  logging:
+    console:
+      _type: console
+      level: INFO
+
+  front_end:
+    _type: console
+
+  profiling:
+    enabled: true
+    export_format: file
+    output_file: "token_profiling_results.json"
+
+workflow:
+  _type: langgraph_workflow
+  llm_url: "https://integrate.api.nvidia.com/v1"
+  llm_api_key: "${NVIDIA_API_KEY}"
+  llm_model_name: "nvidia/llama-3.1-nemotron-70b-instruct"
+  temperature: 0.7
+  first_node_prompt: "Analyze the following topic and provide key insights: {topic}"
+  second_node_prompt: "Based on the analysis: {analysis}, provide detailed recommendations and action items."

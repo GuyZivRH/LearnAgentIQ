@@ -1,0 +1,27 @@
+general:
+  use_uvloop: true
+  logging:
+    console:
+      _type: console
+      level: INFO
+
+  front_end:
+    _type: console
+
+llms:
+  reasoning_llm: 
+    _type: nim 
+    model_name: nvidia/llama-3.1-nemotron-70b-instruct
+    max_tokens: 8000
+    llm_url: "https://integrate.api.nvidia.com/v1"
+  code_llm:
+    _type: nim 
+    model_name: nvidia/llama-3.1-nemotron-70b-instruct 
+    max_tokens: 2048
+    llm_url: "https://integrate.api.nvidia.com/v1"
+
+workflow:
+  _type: code_gen_agent_proper
+  reasoning_llm: reasoning_llm
+  code_llm: code_llm
+  max_iterations: 3

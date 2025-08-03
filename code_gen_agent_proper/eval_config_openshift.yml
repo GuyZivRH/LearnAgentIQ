@@ -1,0 +1,42 @@
+# Configuration for evaluating the AI Code Generation Agent using OpenShift endpoint
+llms:
+  reasoning_llm:
+    _type: openai
+    model_name: hugging-quants/Meta-Llama-3.1-70B-Instruct-AWQ-INT4
+    max_tokens: 8000
+    base_url: "https://llama3-1-70b-instruct-4bit-agent-morpheus-models.apps.ai-dev03.kni.syseng.devcluster.openshift.com/v1"
+    api_key: "dummy_key"
+    temperature: 0
+    top_p: 0.01
+  code_llm:
+    _type: openai
+    model_name: hugging-quants/Meta-Llama-3.1-70B-Instruct-AWQ-INT4
+    max_tokens: 2048
+    base_url: "https://llama3-1-70b-instruct-4bit-agent-morpheus-models.apps.ai-dev03.kni.syseng.devcluster.openshift.com/v1"
+    api_key: "dummy_key"
+    temperature: 0
+    top_p: 0.01
+
+workflow:
+  _type: code_gen_agent_proper
+  reasoning_llm: reasoning_llm
+  code_llm: code_llm
+  max_iterations: 3
+
+eval:
+  general:
+    output_dir: ./eval_results/
+    dataset:
+      _type: jsonl
+      file_path: dataset_complex.jsonl
+      id_key: problem_id
+      structure:
+        question_key: input_message
+        
+    profiler:
+      compute_llm_metrics: true
+      bottleneck_analysis:
+        enable_nested_stack: true
+      concurrency_spike_analysis:
+        enable: true
+        spike_threshold: 5

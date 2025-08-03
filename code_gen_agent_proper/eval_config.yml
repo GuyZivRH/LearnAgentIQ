@@ -1,0 +1,40 @@
+# Configuration for evaluating the AI Code Generation Agent
+
+llms:
+  reasoning_llm: 
+    _type: nim 
+    model_name: nvidia/llama-3.1-nemotron-70b-instruct
+    max_tokens: 8000
+    llm_url: "https://integrate.api.nvidia.com/v1"
+    nvidia_api_key: "${NVIDIA_API_KEY}"
+  code_llm:
+    _type: nim 
+    model_name: nvidia/llama-3.1-nemotron-70b-instruct 
+    max_tokens: 2048
+    llm_url: "https://integrate.api.nvidia.com/v1"
+    nvidia_api_key: "${NVIDIA_API_KEY}"
+
+workflow:
+  _type: code_gen_agent_proper
+  reasoning_llm: reasoning_llm
+  code_llm: code_llm
+  max_iterations: 3
+
+eval:
+  general:
+    output_dir: ./eval_results/
+    dataset:
+      _type: jsonl
+      file_path: dataset_complex.jsonl
+      id_key: problem_id
+      structure:
+        question_key: input_message
+        
+    # Enable profiling for token usage and performance metrics
+    profiler:
+      compute_llm_metrics: true
+      bottleneck_analysis:
+        enable_nested_stack: true
+      concurrency_spike_analysis:
+        enable: true
+        spike_threshold: 5 

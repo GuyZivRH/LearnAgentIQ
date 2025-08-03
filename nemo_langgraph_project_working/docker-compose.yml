@@ -1,0 +1,55 @@
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: otel-collector
+    command: ["--config=/etc/otelcol/config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otelcol/config.yaml
+    ports:
+      - "4317:4317" # OTLP gRPC receiver (for Python app inside Docker)
+      - "4318:4318" # OTLP HTTP receiver (for Python app inside Docker)
+      - "8889:8889" # Prometheus exporter endpoint (for Prometheus to scrape)
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--web.listen-address=:9090"]
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus # Persistent storage for Prometheus data
+    ports:
+      - "9090:9090" # Prometheus UI
+    depends_on:
+      - otel-collector
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000" # Grafana UI
+    volumes:
+      - grafana_data:/var/lib/grafana # Persistent storage for Grafana data
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  # NEW SERVICE: Your Python Application
+  langgraph-app:
+    build: . # Build from the Dockerfile in the current directory
+    container_name: langgraph-app
+    environment:
+      # Pass the NVIDIA API Key securely
+      - NVIDIA_API_KEY=${NVIDIA_API_KEY}
+      # Set the OTel endpoint to the collector's service name within Docker Compose network
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317 # Use gRPC port
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc # Explicitly set protocol to gRPC
+    depends_on:
+      - otel-collector # Ensure collector is up before the app tries to send metrics
+    # No ports needed for this app unless you want to expose its own web UI
+    # command: ["AI safety measures in autonomous vehicles containerized"] # Override CMD in Dockerfile if needed
+
+volumes:
+  prometheus_data:
+  grafana_data:
